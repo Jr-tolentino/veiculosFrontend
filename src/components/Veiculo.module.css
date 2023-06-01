@@ -8,6 +8,7 @@
 
 .main input{
     max-width: 500px;
+    
 }
 
 .main button{
@@ -18,5 +19,6 @@
 
 .main table{
     max-width: 500px;
+    text-transform: uppercase;
 }
 

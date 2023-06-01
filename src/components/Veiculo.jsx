@@ -2,6 +2,8 @@ import {useEffect, useState } from "react"
 import { Button, Form, InputGroup, Table } from 'react-bootstrap';
 import styles from './Veiculo.module.css'
 import api from "axios";
+import { BsTrash } from 'react-icons/bs';
+import { FiEdit } from 'react-icons/fi';
 
 function Veiculo() {
   let [veiculos, setVeiculos] = useState([])
@@ -9,6 +11,8 @@ function Veiculo() {
   let [modelo, setModelo] = useState('');
   let [ano, setAno] = useState('');
   let [placa, setPlaca] = useState('');
+  let [isAlteracao, setIsAlteracao] = useState (false);
+  let [placaAntiga, setPlacaAntiga] = useState ('')
  
 
 
@@ -62,9 +66,46 @@ function Veiculo() {
   }
 
 
+  function setInputsEditar(veiculo){
+    setIsAlteracao(true)
+    setPlacaAntiga(veiculo.placa)
+    setPlaca(veiculo.placa)
+    setMarca(veiculo.marca)
+    setModelo(veiculo.modelo)
+    setAno(veiculo.ano)
+
+  }
+
+  async function editar() {
+    let veiculo = {
+      marca: marca,
+      modelo: modelo,
+      ano: Number(ano),
+      placa: placa,
+    }
+
+    const resposta = await api.put(`http://localhost:3333/veiculos/${placaAntiga}`, veiculo)
+    .catch((e)=>{
+      alert (e.response.data.msg)
+    })
+
+
+    veiculos.forEach((veiculo, i)=>{
+      if(veiculo.placa == placaAntiga) {
+      veiculos[i] = resposta.data
+      }
+      })
+    
+
+    setVeiculos([...veiculos])
+   
+    limparForm()
+  }
+
   return (
     <div className={styles.main}>
       <h1>Veiculos</h1>
+      <span>{placaAntiga}</span>
       
       <Form.Control
         value={placa}
@@ -98,9 +139,16 @@ function Veiculo() {
         aria-describedby="basic-addon1"
       />
 
+      {
+        isAlteracao &&
+        (<Button onClick={editar}>Editar</Button>)
+      }
+      {
+        !isAlteracao &&
+        (<Button onClick={salvar}>Salvar</Button>)
+      }
 
-
-      <Button onClick={salvar}>Salvar</Button>
+      
       <Table striped bordered hover variant='dark'>
         <thead>
           <tr>
@@ -123,7 +171,8 @@ function Veiculo() {
                   <td>{veiculo.modelo}</td>
                   <td>{veiculo.ano}</td>
                   <td>
-                    <Button className="btExcluir" onClick={() => (excluir(veiculo))}>X</Button>
+                    <Button className="btExcluir" onClick={() => (excluir(veiculo))}><BsTrash/></Button>
+                    <Button className="btEditar" onClick={() => (setInputsEditar(veiculo))}><FiEdit/></Button>
                   </td>
                 </tr>
               )
